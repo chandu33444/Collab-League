@@ -1,11 +1,32 @@
-export default function DashboardLayout({
+import { createClient } from '@/utils/supabase/server';
+import Link from 'next/link';
+import { LogoutButton } from '@/components/dashboard/LogoutButton';
+
+export default async function DashboardLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    // Get user's role
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let userRole: 'business' | 'creator' | null = null;
+
+    if (user) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        userRole = profile?.role === 'business' ? 'business' :
+            profile?.role === 'creator' ? 'creator' : null;
+    }
+
     return (
         <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
-            {/* Sidebar Placeholder */}
+            {/* Sidebar */}
             <aside className="fixed inset-y-0 left-0 w-64 bg-[var(--color-surface)] border-r border-[var(--color-border)] hidden md:block">
                 <div className="p-6">
                     <div className="text-xl font-bold bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent">
@@ -13,15 +34,36 @@ export default function DashboardLayout({
                     </div>
                 </div>
                 <nav className="px-4 py-2 space-y-2">
-                    <div className="px-2 py-2 text-sm font-medium rounded-md bg-[var(--color-primary)] text-white">
+                    <Link href="/dashboard" className="block px-2 py-2 text-sm font-medium rounded-md hover:bg-[var(--color-primary)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
                         Dashboard
-                    </div>
-                    <div className="px-2 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
-                        Messages
-                    </div>
-                    <div className="px-2 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+                    </Link>
+
+                    {/* Business-only Navigation */}
+                    {userRole === 'business' && (
+                        <>
+                            <Link href="/dashboard/creators" className="block px-2 py-2 text-sm font-medium rounded-md hover:bg-[var(--color-primary)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+                                Discover Creators
+                            </Link>
+                            <Link href="/dashboard/sent-requests" className="block px-2 py-2 text-sm font-medium rounded-md hover:bg-[var(--color-primary)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+                                Sent Requests
+                            </Link>
+                        </>
+                    )}
+
+                    {/* Creator-only Navigation */}
+                    {userRole === 'creator' && (
+                        <Link href="/dashboard/requests" className="block px-2 py-2 text-sm font-medium rounded-md hover:bg-[var(--color-primary)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+                            Requests
+                        </Link>
+                    )}
+
+                    {/* Common Navigation */}
+                    <Link href="/dashboard/profile" className="block px-2 py-2 text-sm font-medium rounded-md hover:bg-[var(--color-primary)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+                        Profile
+                    </Link>
+                    <Link href="/dashboard/settings" className="block px-2 py-2 text-sm font-medium rounded-md hover:bg-[var(--color-primary)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
                         Settings
-                    </div>
+                    </Link>
                 </nav>
             </aside>
 
@@ -31,7 +73,12 @@ export default function DashboardLayout({
                 <header className="h-16 border-b border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-between px-6">
                     <h1 className="text-lg font-semibold">Dashboard</h1>
                     <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] opacity-20"></div>
+                        {userRole && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-primary)]/20 text-[var(--color-primary)] capitalize">
+                                {userRole}
+                            </span>
+                        )}
+                        <LogoutButton />
                     </div>
                 </header>
                 <main className="p-6">

@@ -63,6 +63,24 @@ export async function updateSession(request: NextRequest) {
                 if (!roleProfile) {
                     return NextResponse.redirect(new URL('/dashboard/onboarding', request.url))
                 }
+
+                // Role-based route protection
+                const businessOnlyRoutes = ['/dashboard/creators', '/dashboard/sent-requests']
+                const creatorOnlyRoutes = ['/dashboard/requests']
+
+                // Redirect businesses away from creator-only routes
+                if (creatorOnlyRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
+                    if (profile.role === 'business') {
+                        return NextResponse.redirect(new URL('/dashboard', request.url))
+                    }
+                }
+
+                // Redirect creators away from business-only routes
+                if (businessOnlyRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
+                    if (profile.role === 'creator') {
+                        return NextResponse.redirect(new URL('/dashboard', request.url))
+                    }
+                }
             }
         }
     }

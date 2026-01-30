@@ -18,7 +18,7 @@ CREATE TABLE public.creators (
   contact_email TEXT NOT NULL,
   website TEXT,
   is_active BOOLEAN DEFAULT true,
-  is_public BOOLEAN DEFAULT false,
+  is_public BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
