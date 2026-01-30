@@ -4,8 +4,9 @@ import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-export default async function RequestDetailPage({ params }: { params: { id: string } }) {
-    const request = await getRequestDetails(params.id);
+export default async function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const request = await getRequestDetails(id);
 
     if (!request) {
         notFound();

@@ -35,6 +35,10 @@ export async function getCreators() {
 export async function getCreator(id: string) {
     const supabase = await createClient()
 
+    // First check if user is authenticated
+    const { data: { user } } = await supabase.auth.getUser()
+    console.log('Fetching creator - User authenticated:', !!user)
+
     const { data, error } = await supabase
         .from('creators')
         .select('*')
@@ -46,10 +50,19 @@ export async function getCreator(id: string) {
             errorCode: error.code,
             errorMessage: error.message,
             errorDetails: error.details,
-            creatorId: id
+            errorHint: error.hint,
+            creatorId: id,
+            errorString: JSON.stringify(error, null, 2)
         })
         return null
     }
+
+    console.log('Creator data fetched:', {
+        id: data?.id,
+        full_name: data?.full_name,
+        is_active: data?.is_active,
+        is_public: data?.is_public
+    })
 
     // Return null if creator is not active or public
     if (!data || !data.is_active || !data.is_public) {
