@@ -9,6 +9,8 @@ interface RequestCardProps {
         status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'expired';
         created_at: string;
         deliverables: string;
+        creator_notes?: string;
+        responded_at?: string;
         business?: {
             brand_name: string;
             logo_url?: string;
@@ -76,6 +78,16 @@ export function RequestCard({ request, viewerRole }: RequestCardProps) {
                 <p className="text-sm text-[var(--color-text-muted)] mb-4 line-clamp-2">
                     {request.deliverables}
                 </p>
+
+                {/* Creator Notes Preview */}
+                {request.creator_notes && request.status !== 'pending' && (
+                    <div className="mb-4 p-3 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-lg">
+                        <p className="text-xs font-medium text-[var(--color-primary)] mb-1">Creator's Response:</p>
+                        <p className="text-sm text-[var(--color-text)] line-clamp-2">
+                            {request.creator_notes}
+                        </p>
+                    </div>
+                )}
 
                 <div className="flex items-center justify-between text-xs text-[var(--color-text-faint)]">
                     <span>Sent {formatDate(request.created_at)}</span>
