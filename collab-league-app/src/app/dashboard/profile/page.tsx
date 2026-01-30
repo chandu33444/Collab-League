@@ -25,10 +25,28 @@ export default function ProfilePage() {
 
     async function loadProfile() {
         const data = await getProfile();
+        // Admin profiles might only have base data (id, role, email form auth)
+        // Check if data exists. If it's an admin, we might not have a detailed profile row if we just query 'creators'/'businesses'.
+        // getProfile() action needs to handle admin too.
+
         if (!data) {
+            // For admins, if getProfile returns null, it might be because they aren't in creators/businesses tables.
+            // We should check if we can get basic info.
+            // But for now, let's assume getProfile needs fixing or we handle it here.
+            // If we are admin, we shouldn't necessarily redirect to onboarding.
             router.push('/dashboard/onboarding');
             return;
         }
+
+        if (data.role === 'admin') {
+            // Admins don't have extended profile data usually.
+            // We can mock some fields or handle it.
+            // Setting profile data.
+            setProfile(data);
+            setLoading(false);
+            return;
+        }
+
         setProfile(data);
         setLoading(false);
     }
@@ -82,7 +100,18 @@ export default function ProfilePage() {
             {editing ? (
                 <div className="card p-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {profile.role === 'creator' ? (
+                        {profile.role === 'admin' ? (
+                            <div className="text-center py-8">
+                                <p className="text-[var(--color-text-muted)]">Admin profiles are managed via system configuration.</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditing(false)}
+                                    className="btn-secondary mt-4"
+                                >
+                                    Go Back
+                                </button>
+                            </div>
+                        ) : profile.role === 'creator' ? (
                             <>
                                 <Input
                                     label="Full Name"
@@ -91,6 +120,7 @@ export default function ProfilePage() {
                                     defaultValue={profile.full_name}
                                     required
                                 />
+                                {/* ... existing creator fields ... */}
                                 <Textarea
                                     label="Bio"
                                     name="bio"
@@ -132,7 +162,7 @@ export default function ProfilePage() {
                                         value="true"
                                         defaultChecked={profile.is_active}
                                         className="w-4 h-4 text-[var(--color-primary)] bg-[var(--color-bg)] border-[var(--color-border)] 
-                      rounded focus:ring-2 focus:ring-[var(--color-primary)]"
+                       rounded focus:ring-2 focus:ring-[var(--color-primary)]"
                                     />
                                     <label htmlFor="isActive" className="text-sm text-[var(--color-text)]">
                                         Profile is active (available for collaborations)
@@ -146,7 +176,7 @@ export default function ProfilePage() {
                                         value="true"
                                         defaultChecked={profile.is_public}
                                         className="w-4 h-4 text-[var(--color-primary)] bg-[var(--color-bg)] border-[var(--color-border)] 
-                      rounded focus:ring-2 focus:ring-[var(--color-primary)]"
+                       rounded focus:ring-2 focus:ring-[var(--color-primary)]"
                                     />
                                     <label htmlFor="isPublic" className="text-sm text-[var(--color-text)]">
                                         Make my profile public (businesses can discover me)
@@ -190,27 +220,39 @@ export default function ProfilePage() {
                             </>
                         )}
 
-                        <div className="flex gap-4">
-                            <button
-                                type="submit"
-                                disabled={saving}
-                                className="btn-primary flex-1 disabled:opacity-50"
-                            >
-                                {saving ? 'Saving...' : 'Save Changes'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setEditing(false)}
-                                className="btn-secondary flex-1"
-                                disabled={saving}
-                            >
-                                Cancel
-                            </button>
-                        </div>
+                        {profile.role !== 'admin' && (
+                            <div className="flex gap-4">
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="btn-primary flex-1 disabled:opacity-50"
+                                >
+                                    {saving ? 'Saving...' : 'Save Changes'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditing(false)}
+                                    className="btn-secondary flex-1"
+                                    disabled={saving}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        )}
                     </form>
                 </div>
             ) : (
-                <ProfileCard profile={profile} />
+                profile.role === 'admin' ? (
+                    <div className="card p-8 text-center">
+                        <div className="w-24 h-24 bg-[var(--color-primary)]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span className="text-3xl">🛡️</span>
+                        </div>
+                        <h2 className="text-xl font-bold mb-2">Administrator</h2>
+                        <p className="text-[var(--color-text-muted)]">You have full system access.</p>
+                    </div>
+                ) : (
+                    <ProfileCard profile={profile} />
+                )
             )}
         </div>
     );

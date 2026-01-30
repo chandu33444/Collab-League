@@ -14,11 +14,13 @@ async function getUsers() {
 
     const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('id, role, created_at, updated_at')
-        .order('created_at', { ascending: false });
+        .select('id, role, updated_at')
+        .order('updated_at', { ascending: false });
 
     if (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching users:', JSON.stringify(error, null, 2));
+        // Also log the raw object just in case
+        console.error('Raw Error:', error);
         return [];
     }
 
@@ -26,19 +28,23 @@ async function getUsers() {
     const users = await Promise.all(profiles.map(async (p) => {
         let details: any = {};
         if (p.role === 'creator') {
-            const { data } = await supabase.from('creators').select('full_name, is_active, is_public').eq('id', p.id).single();
+            const { data } = await supabase.from('creators').select('full_name, is_active, is_public, created_at').eq('id', p.id).single();
             details = data || {};
         } else if (p.role === 'business') {
-            const { data } = await supabase.from('businesses').select('brand_name, is_verified').eq('id', p.id).single();
+            const { data } = await supabase.from('businesses').select('brand_name, is_verified, created_at').eq('id', p.id).single();
             details = { full_name: data?.brand_name, ...data };
         } else if (p.role === 'admin') {
             details = { full_name: 'System Admin' };
         }
 
+        // Use role-specific created_at if available, otherwise use profile updated_at or now
+        const joinedAt = details.created_at || p.updated_at || new Date().toISOString();
+
         return {
             ...p,
             name: details.full_name || 'Unknown',
             isActive: details.is_active !== false, // Default true unless explicitly false (businesses lack is_active currently in schema? Need to check)
+            created_at: joinedAt,
             details
         };
     }));
@@ -96,8 +102,8 @@ export default async function UsersManagementPage() {
                                     <td className="px-6 py-4">
                                         {user.role === 'creator' ? (
                                             <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${user.isActive
-                                                    ? 'bg-green-500/10 text-green-600'
-                                                    : 'bg-red-500/10 text-red-600'
+                                                ? 'bg-green-500/10 text-green-600'
+                                                : 'bg-red-500/10 text-red-600'
                                                 }`}>
                                                 <span className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
                                                 {user.isActive ? 'Active' : 'Banned'}
@@ -116,8 +122,8 @@ export default async function UsersManagementPage() {
                                                 await toggleStatus(user.id, user.isActive, user.role);
                                             }}>
                                                 <button className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${user.isActive
-                                                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                                                        : 'bg-green-50 text-green-600 hover:bg-green-100'
+                                                    ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                                                    : 'bg-green-50 text-green-600 hover:bg-green-100'
                                                     }`}>
                                                     {user.isActive ? 'Ban User' : 'Activate'}
                                                 </button>

@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { getCampaigns } from '@/app/actions/campaigns';
 import { CampaignList } from '@/components/campaigns';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 type FilterStatus = 'all' | 'in_progress' | 'completed';
 
@@ -28,6 +29,10 @@ export default async function CampaignsPage({
         .single();
 
     const viewerRole = profile?.role as 'business' | 'creator';
+
+    if (profile?.role === 'admin') {
+        redirect('/dashboard/admin/campaigns');
+    }
 
     // Get all campaigns
     const allCampaigns = await getCampaigns();
