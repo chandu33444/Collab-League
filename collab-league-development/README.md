@@ -87,14 +87,16 @@ Landing    Auth    Profiles  Requests  Campaigns  Discovery  Polish
 
 ## 🎨 Design System
 
-All phases follow a consistent design language:
+All phases follow a consistent design language. 
+
+📄 **[Full UI/UX Guidelines →](./UI_UX_Guidelines.md)**
 
 ### Visual Style
 - **Theme:** Modern SaaS + Creator Economy hybrid
 - **Mode:** Dark-first with premium aesthetics
-- **Approach:** Trust-first for brands, friendly for creators
+- **Approach:** Trust-first for businesses, friendly for creators
 
-### Design Tokens
+### Key Design Tokens
 ```css
 /* Colors */
 --color-primary: #6366f1;     /* Indigo */
@@ -225,6 +227,7 @@ npx supabase db push
 
 | Document | Description |
 |----------|-------------|
+| [UI/UX Guidelines](./UI_UX_Guidelines.md) | Colors, typography, components, animations |
 | [Phase 0: Landing Page](./phase-0-landing-page.md) | Landing, login/signup flows |
 | [Phase 1: Foundation](./phase-1-foundation.md) | Auth middleware, design system |
 | [Phase 2: User Profiles](./phase-2-user-profiles.md) | Onboarding, profiles |
