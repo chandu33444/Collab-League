@@ -58,6 +58,10 @@ export default async function DashboardLayout({
                     )}
 
                     {/* Common Navigation */}
+                    <Link href="/dashboard/campaigns" className="block px-2 py-2 text-sm font-medium rounded-md hover:bg-[var(--color-primary)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+                        Campaigns
+                    </Link>
+
                     <Link href="/dashboard/profile" className="block px-2 py-2 text-sm font-medium rounded-md hover:bg-[var(--color-primary)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
                         Profile
                     </Link>
