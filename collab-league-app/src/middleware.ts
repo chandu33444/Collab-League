@@ -52,35 +52,49 @@ export async function updateSession(request: NextRequest) {
 
             if (profile) {
                 // Check if role-specific profile exists
-                const table = profile.role === 'creator' ? 'creators' : 'businesses'
-                const { data: roleProfile } = await supabase
-                    .from(table)
-                    .select('id')
-                    .eq('id', user.id)
-                    .single()
+                // Admins don't have a separate table, so we skip this check for them
+                if (profile.role !== 'admin') {
+                    const table = profile.role === 'creator' ? 'creators' : 'businesses'
+                    const { data: roleProfile } = await supabase
+                        .from(table)
+                        .select('id')
+                        .eq('id', user.id)
+                        .single()
 
-                // Redirect to onboarding if profile incomplete
-                if (!roleProfile) {
-                    return NextResponse.redirect(new URL('/dashboard/onboarding', request.url))
+                    // Redirect to onboarding if profile incomplete
+                    if (!roleProfile) {
+                        return NextResponse.redirect(new URL('/dashboard/onboarding', request.url))
+                    }
                 }
 
                 // Role-based route protection
                 const pathname = request.nextUrl.pathname;
 
-                // Business-only routes
+                // Admin routes
+                if (pathname.startsWith('/dashboard/admin')) {
+                    if (profile.role !== 'admin') {
+                        return NextResponse.redirect(new URL('/dashboard', request.url));
+                    }
+                    // Allow admin to proceed
+                    return supabaseResponse;
+                }
+
+                // Admin accessing other dashboards - allow or redirect?
+                // Let's redirect admins to their own dashboard if they hit the root
+                if (pathname === '/dashboard' && profile.role === 'admin') {
+                    return NextResponse.redirect(new URL('/dashboard/admin', request.url));
+                }
+
+                // Regular user routing (existing logic)
                 const businessOnlyRoutes = ['/dashboard/creators', '/dashboard/sent-requests'];
 
-                // Creator-only routes (excluding detail pages)
-                // Detail pages like /dashboard/requests/[id] are allowed for both roles
                 const isCreatorListRoute = pathname === '/dashboard/requests' ||
                     pathname === '/dashboard/requests/';
 
-                // Redirect businesses away from creator-only LIST routes
                 if (isCreatorListRoute && profile.role === 'business') {
                     return NextResponse.redirect(new URL('/dashboard', request.url));
                 }
 
-                // Redirect creators away from business-only routes
                 if (businessOnlyRoutes.some(route => pathname.startsWith(route))) {
                     if (profile.role === 'creator') {
                         return NextResponse.redirect(new URL('/dashboard', request.url));

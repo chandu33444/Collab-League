@@ -5,7 +5,7 @@ import { Industry, CompanySize } from '@/lib/constants/industries';
 // Base profile from auth
 export interface BaseProfile {
     id: string;
-    role: 'creator' | 'business';
+    role: 'creator' | 'business' | 'admin';
     username?: string;
     avatar_url?: string;
     updated_at?: string;
@@ -42,8 +42,14 @@ export interface BusinessProfile extends BaseProfile {
     created_at?: string;
 }
 
+// Admin-specific profile
+export interface AdminProfile extends BaseProfile {
+    role: 'admin';
+    full_name?: string; // Optional, might just be email in auth
+}
+
 // Union type for all profiles
-export type UserProfile = CreatorProfile | BusinessProfile;
+export type UserProfile = CreatorProfile | BusinessProfile | AdminProfile;
 
 // Form data types
 export interface CreatorProfileFormData {
