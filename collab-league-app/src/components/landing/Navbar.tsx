@@ -18,15 +18,18 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-[var(--color-border)]">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-3">
           <Image
             src="/Logo/logo-v3.png"
             alt="Collab League"
-            width={180}
-            height={60}
-            className="h-16 w-auto"
+            width={50}
+            height={50}
+            className="h-12 w-auto"
             priority
           />
+          <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Collab League
+          </span>
         </Link>
 
         {/* Desktop Nav */}
